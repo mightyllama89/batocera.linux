@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-BLUEZ5_UTILS_VERSION = 5.44
+BLUEZ5_UTILS_VERSION = 5.47
 BLUEZ5_UTILS_SOURCE = bluez-$(BLUEZ5_UTILS_VERSION).tar.xz
 BLUEZ5_UTILS_SITE = $(BR2_KERNEL_MIRROR)/linux/bluetooth
 BLUEZ5_UTILS_INSTALL_STAGING = YES
@@ -40,19 +40,55 @@ else
 BLUEZ5_UTILS_CONF_OPTS += --disable-experimental
 endif
 
+# enable health plugin
+ifeq ($(BR2_PACKAGE_BLUEZ5_PLUGINS_HEALTH),y)
+BLUEZ5_UTILS_CONF_OPTS += --enable-health
+else
+BLUEZ5_UTILS_CONF_OPTS += --disable-health
+endif
+
+# enable midi profile
+ifeq ($(BR2_PACKAGE_BLUEZ5_PLUGINS_MIDI),y)
+BLUEZ5_UTILS_CONF_OPTS += --enable-midi
+BLUEZ5_UTILS_DEPENDENCIES += alsa-lib
+else
+BLUEZ5_UTILS_CONF_OPTS += --disable-midi
+endif
+
+# enable nfc plugin
+ifeq ($(BR2_PACKAGE_BLUEZ5_PLUGINS_NFC),y)
+BLUEZ5_UTILS_CONF_OPTS += --enable-nfc
+else
+BLUEZ5_UTILS_CONF_OPTS += --disable-nfc
+endif
+
+# enable sap plugin
+ifeq ($(BR2_PACKAGE_BLUEZ5_PLUGINS_SAP),y)
+BLUEZ5_UTILS_CONF_OPTS += --enable-sap
+else
+BLUEZ5_UTILS_CONF_OPTS += --disable-sap
+endif
+
 # enable sixaxis plugin
-ifeq ($(BR2_PACKAGE_BLUEZ5_PLUGINS_SIXAXIS),y)
+ifeq ($(BR2_PACKAGE_BLUEZ5_UTILS_PLUGINS_SIXAXIS),y)
 BLUEZ5_UTILS_CONF_OPTS += --enable-sixaxis
 else
 BLUEZ5_UTILS_CONF_OPTS += --disable-sixaxis
 endif
 
 # install gatttool (For some reason upstream choose not to do it by default)
-ifeq ($(BR2_PACKAGE_BLUEZ5_UTILS_GATTTOOL),y)
+ifeq ($(BR2_PACKAGE_BLUEZ5_UTILS_DEPRECATED),y)
 define BLUEZ5_UTILS_INSTALL_GATTTOOL
 	$(INSTALL) -D -m 0755 $(@D)/attrib/gatttool $(TARGET_DIR)/usr/bin/gatttool
 endef
 BLUEZ5_UTILS_POST_INSTALL_TARGET_HOOKS += BLUEZ5_UTILS_INSTALL_GATTTOOL
+# hciattach_bcm43xx defines default firmware path in `/etc/firmware`, but
+# Broadcom firmware blobs are usually located in `/lib/firmware`.
+BLUEZ5_UTILS_CONF_ENV += \
+	CPPFLAGS='$(TARGET_CPPFLAGS) -DFIRMWARE_DIR=\"/lib/firmware\"'
+BLUEZ5_UTILS_CONF_OPTS += --enable-deprecated
+else
+BLUEZ5_UTILS_CONF_OPTS += --disable-deprecated
 endif
 
 # enable test

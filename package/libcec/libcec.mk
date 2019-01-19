@@ -24,7 +24,8 @@ ifeq ($(BR2_PACKAGE_PYTHON)$(BR2_PACKAGE_PYTHON3),y)
 LIBCEC_DEPENDENCIES += host-swig $(if $(BR2_PACKAGE_PYTHON3),python3,python)
 endif
 
-ifeq ($(BR2_PACKAGE_RECALBOX_TARGET_XU4),y)
+# batocera
+ifeq ($(BR2_PACKAGE_LIBCEC_EXYNOS_API),y)
 LIBCEC_CONF_OPTS += -DHAVE_EXYNOS_API=1
 endif
 
@@ -40,5 +41,12 @@ endif
 ifeq ($(BR2_PACKAGE_XLIB_LIBXRANDR),y)
 LIBCEC_DEPENDENCIES += xlib_libXrandr
 endif
+
+# Disable information about how libCEC is compiled.
+LIBCEC_CONF_OPTS += -DHAVE_GIT_BIN="" \
+	-DHAVE_DATE_BIN="" \
+	-DHAVE_WHOAMI_BIN="" \
+	-DHAVE_HOSTNAME_BIN="" \
+	-DHAVE_UNAME_BIN=""
 
 $(eval $(cmake-package))

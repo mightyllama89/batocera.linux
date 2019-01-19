@@ -4,7 +4,8 @@
 #
 ################################################################################
 
-FFMPEG_VERSION = 3.3
+# batocera: kodi: fix video with noisy sound
+FFMPEG_VERSION = 3.3.5
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.xz
 FFMPEG_SITE = http://ffmpeg.org/releases
 FFMPEG_INSTALL_STAGING = YES
@@ -42,6 +43,9 @@ FFMPEG_CONF_OPTS = \
 	--disable-mipsdspr2 \
 	--disable-msa \
 	--enable-hwaccels \
+	--disable-cuda \
+	--disable-cuvid \
+	--disable-nvenc \
 	--disable-avisynth \
 	--disable-frei0r \
 	--disable-libopencore-amrnb \
@@ -157,12 +161,18 @@ endif
 
 ifeq ($(BR2_PACKAGE_FFMPEG_INDEVS),y)
 FFMPEG_CONF_OPTS += --enable-indevs
+ifeq ($(BR2_PACKAGE_ALSA_LIB),y)
+FFMPEG_DEPENDENCIES += alsa-lib
+endif
 else
 FFMPEG_CONF_OPTS += --disable-indevs
 endif
 
 ifeq ($(BR2_PACKAGE_FFMPEG_OUTDEVS),y)
 FFMPEG_CONF_OPTS += --enable-outdevs
+ifeq ($(BR2_PACKAGE_ALSA_LIB),y)
+FFMPEG_DEPENDENCIES += alsa-lib
+endif
 else
 FFMPEG_CONF_OPTS += --disable-outdevs
 endif
@@ -199,13 +209,13 @@ FFMPEG_CONF_OPTS += --enable-gnutls --disable-openssl
 FFMPEG_DEPENDENCIES += gnutls
 else
 FFMPEG_CONF_OPTS += --disable-gnutls
-ifeq ($(BR2_PACKAGE_OPENSSL),y)
+ifeq ($(BR2_PACKAGE_LIBOPENSSL),y)
 # openssl isn't license compatible with GPL
 ifeq ($(BR2_PACKAGE_FFMPEG_GPL)x$(BR2_PACKAGE_FFMPEG_NONFREE),yx)
 FFMPEG_CONF_OPTS += --disable-openssl
 else
 FFMPEG_CONF_OPTS += --enable-openssl
-FFMPEG_DEPENDENCIES += openssl
+FFMPEG_DEPENDENCIES += libopenssl
 endif
 else
 FFMPEG_CONF_OPTS += --disable-openssl
@@ -243,6 +253,14 @@ FFMPEG_CONF_OPTS += --enable-vdpau
 FFMPEG_DEPENDENCIES += libvdpau
 else
 FFMPEG_CONF_OPTS += --disable-vdpau
+endif
+
+ifeq ($(BR2_PACKAGE_RPI_FIRMWARE)$(BR2_PACKAGE_RPI_USERLAND),yy)
+FFMPEG_CONF_OPTS += --enable-mmal --enable-omx --enable-omx-rpi \
+	--extra-cflags=-I$(STAGING_DIR)/usr/include/IL
+FFMPEG_DEPENDENCIES += rpi-firmware rpi-userland
+else
+FFMPEG_CONF_OPTS += --disable-mmal --disable-omx --disable-omx-rpi
 endif
 
 # To avoid a circular dependency only use opencv if opencv itself does

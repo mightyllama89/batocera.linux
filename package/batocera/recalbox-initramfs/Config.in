@@ -1,7 +1,0 @@
-config BR2_PACKAGE_RECALBOX_INITRAMFS
-	bool "Recalbox initramfs"
-	default n
-	help
-	  A simple initramfs based on busybox.
-
-	  http://busybox.net/

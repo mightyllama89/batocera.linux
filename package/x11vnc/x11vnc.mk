@@ -4,12 +4,12 @@
 #
 ################################################################################
 
-X11VNC_VERSION = 0.9.14
+X11VNC_VERSION = 0.9.15
 X11VNC_SITE = $(call github,LibVNC,x11vnc,$(X11VNC_VERSION))
 # sdl support is not used in x11vnc, but host include / library search paths
 # leak in if host has sdl-config
 X11VNC_CONF_OPTS = --without-sdl
-X11VNC_DEPENDENCIES = xlib_libXt xlib_libXext xlib_libXtst
+X11VNC_DEPENDENCIES = xlib_libXt xlib_libXext xlib_libXtst libvncserver
 X11VNC_LICENSE = GPL-2.0+
 X11VNC_LICENSE_FILES = COPYING
 

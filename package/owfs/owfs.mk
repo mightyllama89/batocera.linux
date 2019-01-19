@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-OWFS_VERSION = 3.1p1
+OWFS_VERSION = 3.2p2
 OWFS_SITE = http://downloads.sourceforge.net/project/owfs/owfs/$(OWFS_VERSION)
 OWFS_DEPENDENCIES = host-pkgconf
 OWFS_CONF_OPTS = --disable-owperl --without-perl5 --disable-owtcl --without-tcl
@@ -20,6 +20,9 @@ OWFS_INSTALL_STAGING = YES
 # owfs PHP support is not PHP 7 compliant
 # https://sourceforge.net/p/owfs/support-requests/32/
 OWFS_CONF_OPTS += --disable-owphp --without-php
+
+# Skip man pages processing
+OWFS_CONF_ENV += ac_cv_path_SOELIM=true
 
 ifeq ($(BR2_PACKAGE_LIBFUSE),y)
 OWFS_DEPENDENCIES += libfuse
@@ -68,7 +71,7 @@ OWFS_MAKE_ENV += \
 OWFS_DEPENDENCIES += python host-swig
 # The configure scripts finds PYSITEDIR as the python_lib directory of
 # host-python, and then prepends DESTDIR in front of it. So we end up
-# installing things in $(TARGET_DIR)/$(HOST_DIR)/usr/lib/python which is
+# installing things in $(TARGET_DIR)/$(HOST_DIR)/lib/python which is
 # clearly wrong.
 # Patching owfs to do the right thing is not trivial, it's much easier to
 # override the PYSITEDIR variable in make.

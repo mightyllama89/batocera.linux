@@ -4,9 +4,9 @@
 #
 ################################################################################
 
-EIGEN_VERSION = 3.2.5
-EIGEN_SITE = https://bitbucket.org/eigen/eigen
-EIGEN_SITE_METHOD = hg
+EIGEN_VERSION = 3.3.4
+EIGEN_SOURCE = $(EIGEN_VERSION).tar.bz2
+EIGEN_SITE = https://bitbucket.org/eigen/eigen/get
 EIGEN_LICENSE = MPL2, BSD-3-Clause, LGPL-2.1
 EIGEN_LICENSE_FILES = COPYING.MPL2 COPYING.BSD COPYING.LGPL COPYING.README
 EIGEN_INSTALL_STAGING = YES
@@ -23,7 +23,8 @@ endif
 # Generate the .pc file at build time
 define EIGEN_BUILD_CMDS
 	sed -r -e 's,^Version: .*,Version: $(EIGEN_VERSION),' \
-		-e 's,^Cflags: .*,Cflags: -I$(EIGEN_DEST_DIR),' \
+		-e 's,^Cflags: .*,Cflags: -I$$\{prefix\}/include/eigen3,' \
+		-e 's,^prefix.*,prefix=/usr,' \
 		$(@D)/eigen3.pc.in >$(@D)/eigen3.pc
 endef
 
@@ -33,6 +34,7 @@ define EIGEN_INSTALL_STAGING_CMDS
 	$(RM) -r $(EIGEN_DEST_DIR)
 	mkdir -p $(EIGEN_DEST_DIR)
 	cp -a $(@D)/Eigen $(EIGEN_DEST_DIR)
+        # batocera
         cp $(@D)/signature_of_eigen3_matrix_library $(EIGEN_DEST_DIR)
 	$(EIGEN_INSTALL_UNSUPPORTED_MODULES_CMDS)
 	$(INSTALL) -D -m 0644 $(@D)/eigen3.pc \

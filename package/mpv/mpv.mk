@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-MPV_VERSION = 0.25.0
+MPV_VERSION = 0.27.2
 MPV_SITE = https://github.com/mpv-player/mpv/archive
 MPV_SOURCE = v$(MPV_VERSION).tar.gz
 MPV_DEPENDENCIES = \
@@ -20,19 +20,18 @@ MPV_CONF_OPTS = \
 	--prefix=/usr \
 	--disable-android \
 	--disable-caca \
-	--disable-cdda \
 	--disable-cocoa \
 	--disable-coreaudio \
 	--disable-cuda-hwaccel \
 	--disable-libv4l2 \
 	--disable-opensles \
-	--disable-rpi \
 	--disable-rsound \
 	--disable-rubberband \
 	--disable-uchardet \
 	--disable-vapoursynth \
 	--disable-vapoursynth-lazy \
-	--disable-vdpau
+	--disable-vdpau \
+	--disable-mali-fbdev
 
 # ALSA support requires pcm+mixer
 ifeq ($(BR2_PACKAGE_ALSA_LIB_MIXER)$(BR2_PACKAGE_ALSA_LIB_PCM),yy)
@@ -97,6 +96,14 @@ MPV_CONF_OPTS += --enable-libbluray
 MPV_DEPENDENCIES += libbluray
 else
 MPV_CONF_OPTS += --disable-libbluray
+endif
+
+# libcdio-paranoia
+ifeq ($(BR2_PACKAGE_LIBCDIO_PARANOIA),y)
+MPV_CONF_OPTS += --enable-cdda
+MPV_DEPENDENCIES += libcdio-paranoia
+else
+MPV_CONF_OPTS += --disable-cdda
 endif
 
 # libdvdnav
@@ -169,11 +176,19 @@ else
 MPV_CONF_OPTS += --disable-sdl1 --disable-sdl2
 endif
 
+# Raspberry Pi support
+ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)
+MPV_CONF_OPTS += --enable-rpi --enable-gl
+MPV_DEPENDENCIES += rpi-userland
+else
+MPV_CONF_OPTS += --disable-rpi
+endif
+
 # va-api support
 # This requires one or more of the egl-drm, wayland, x11 backends
 # For now we support wayland and x11
 ifeq ($(BR2_PACKAGE_LIBVA),y)
-ifneq ($(BR2_PACKAGE_WAYLAND)$(BR2_PACKAGE_XLIB_LIBX11),)
+ifneq ($(BR2_PACKAGE_WAYLAND)$(BR2_PACKAGE_XORG7),)
 MPV_CONF_OPTS += --enable-vaapi
 MPV_DEPENDENCIES += libva
 else
@@ -191,31 +206,12 @@ else
 MPV_CONF_OPTS += --disable-wayland
 endif
 
-# Base X11 support
-ifeq ($(BR2_PACKAGE_XLIB_LIBX11),y)
-MPV_CONF_OPTS += --enable-x11 --disable-xss
-MPV_DEPENDENCIES += xlib_libX11
-# xext
-ifeq ($(BR2_PACKAGE_XLIB_LIBXEXT),y)
-MPV_CONF_OPTS += --enable-xext
-MPV_DEPENDENCIES += xlib_libXext
-else
-MPV_CONF_OPTS += --disable-xext
-endif
-# xinerama
-ifeq ($(BR2_PACKAGE_XLIB_LIBXINERAMA),y)
-MPV_CONF_OPTS += --enable-xinerama
-MPV_DEPENDENCIES += xlib_libXinerama
-else
-MPV_CONF_OPTS += --disable-xinerama
-endif
-# xrandr
-ifeq ($(BR2_PACKAGE_XLIB_LIBXRANDR),y)
-MPV_CONF_OPTS += --enable-xrandr
-MPV_DEPENDENCIES += xlib_libXrandr
-else
-MPV_CONF_OPTS += --disable-xrandr
-endif
+# Base X11 support. Config.in ensures that if BR2_PACKAGE_XORG7 is
+# enabled, xlib_libX11, xlib_libXext, xlib_libXinerama,
+# xlib_libXrandr, xlib_libXScrnSaver.
+ifeq ($(BR2_PACKAGE_XORG7),y)
+MPV_CONF_OPTS += --enable-x11
+MPV_DEPENDENCIES += xlib_libX11 xlib_libXext xlib_libXinerama xlib_libXrandr xlib_libXScrnSaver
 # XVideo
 ifeq ($(BR2_PACKAGE_XLIB_LIBXV),y)
 MPV_CONF_OPTS += --enable-xv

@@ -4,9 +4,9 @@
 #
 ################################################################################
 
-IMAGEMAGICK_VERSION = 7.0.5-4
-IMAGEMAGICK_SOURCE = ImageMagick-$(IMAGEMAGICK_VERSION).tar.xz
-IMAGEMAGICK_SITE = http://www.imagemagick.org/download/releases
+IMAGEMAGICK_VERSION = 7.0.7-39
+IMAGEMAGICK_SOURCE = $(IMAGEMAGICK_VERSION).tar.gz
+IMAGEMAGICK_SITE = https://github.com/ImageMagick/ImageMagick/archive
 IMAGEMAGICK_LICENSE = Apache-2.0
 IMAGEMAGICK_LICENSE_FILES = LICENSE
 
@@ -143,4 +143,41 @@ else
 IMAGEMAGICK_CONF_OPTS += --without-bzlib
 endif
 
+HOST_IMAGEMAGICK_CONF_OPTS = \
+	--disable-openmp \
+	--without-djvu \
+	--without-dps \
+	--without-flif \
+	--without-fpx \
+	--without-gslib \
+	--without-gvc \
+	--without-jbig \
+	--without-lqr \
+	--without-openexr \
+	--without-perl \
+	--without-raqm \
+	--without-wmf \
+	--without-x \
+	--without-bzlib \
+	--without-fftw \
+	--without-fontconfig \
+	--without-freetype \
+	--without-lcms \
+	--without-lzma \
+	--without-pango \
+	--without-rsvg \
+	--without-tiff \
+	--without-webp \
+	--without-xml \
+	--with-jpeg \
+	--with-png \
+	--with-zlib
+
+HOST_IMAGEMAGICK_DEPENDENCIES = \
+	host-libjpeg \
+	host-libpng \
+	host-pkgconf \
+	host-zlib
+
 $(eval $(autotools-package))
+$(eval $(host-autotools-package))
