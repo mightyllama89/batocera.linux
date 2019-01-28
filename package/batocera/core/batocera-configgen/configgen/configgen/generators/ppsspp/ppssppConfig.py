@@ -17,11 +17,15 @@ def writePPSSPPConfig(system):
 
 def writePPSSPPConfigDefault():
     if not os.path.exists(recalboxFiles.ppssppConfig):
+        if not os.path.exists(os.path.dirname(recalboxFiles.ppssppConfig)):
+            os.makedirs(os.path.dirname(recalboxFiles.ppssppConfig))
         # write default values template, so that the rest of the config can set values
         f = open(recalboxFiles.ppssppConfig, "w")
         f.write("[Graphics]\n")
         f.write("FrameSkip = 0\n")
         f.write("ShowFPSCounter = 0\n")
+        f.write("FrameSkipType = 0\n")
+        f.write("InternalResolution = 1\n")
         f.close()
 
 def createPPSSPPConfig(system):
@@ -38,6 +42,16 @@ def createPPSSPPConfig(system):
         ppssppConfig['FrameSkip'] = '1'
     else:
         ppssppConfig['FrameSkip'] = '0'
+
+    if system.isOptSet('frameskiptype'):
+        ppssppConfig['FrameSkipType'] = system.config["frameskiptype"]
+    else:
+        ppssppConfig['FrameSkipType'] = '0'
+
+    if system.isOptSet('internalresolution'):
+        ppssppConfig['InternalResolution'] = system.config["internalresolution"]
+    else:
+        ppssppConfig['InternalResolution'] = '1'
 
     return ppssppConfig
 
