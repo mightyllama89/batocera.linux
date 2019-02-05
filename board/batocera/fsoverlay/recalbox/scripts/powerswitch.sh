@@ -223,6 +223,22 @@ pin356_stop()
     fi
 }
 
+retroflag_start()
+{
+	python /recalbox/scripts/retroflag-power.py &
+    pid=$!
+    echo "$pid" > /tmp/retroflag-power.pid
+    wait "$pid"
+}
+
+retroflag_stop()
+{
+    if [[ -f /tmp/retroflag-power.pid ]]; then
+        kill `cat /tmp/retroflag-power.pid`
+    fi
+}
+
+
 pin56_start()
 {
     mode=$1
@@ -274,6 +290,10 @@ case "$CONFVALUE" in
         pin56_$1 push
     ;;
     "PIN356ONOFFRESET")
+        echo "will start pin356_$1"
+        pin356_$1 noparam
+    ;;
+     "RETROFLAGPOWER")
         echo "will start pin356_$1"
         pin356_$1 noparam
     ;;
