@@ -223,18 +223,18 @@ pin356_stop()
     fi
 }
 
-retroflag_start()
+retroflag-pi_start()
 {
-	python /recalbox/scripts/retroflag-power.py &
+	python /recalbox/scripts/retroflag-pi.py &
     pid=$!
-    echo "$pid" > /tmp/retroflag-power.pid
+    echo "$pid" > /tmp/retroflag-pi.pid
     wait "$pid"
 }
 
-retroflag_stop()
+retroflag-pi_stop()
 {
-    if [[ -f /tmp/retroflag-power.pid ]]; then
-        kill `cat /tmp/retroflag-power.pid`
+    if [[ -f /tmp/retroflag-pi.pid ]]; then
+        kill `cat /tmp/retroflag-pi.pid`
     fi
 }
 
@@ -293,8 +293,8 @@ case "$CONFVALUE" in
         echo "will start pin356_$1"
         pin356_$1 noparam
     ;;
-     "RETROFLAGPOWER")
-        echo "will start pin356_$1"
-        pin356_$1 noparam
+     "RETROFLAG_PI")
+        echo "will start retroflag-pi_$1"
+        retroflag-pi_$1 noparam
     ;;
 esac
