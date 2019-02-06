@@ -1,11 +1,11 @@
 diff --git a/Makefile.libretro b/Makefile.libretro
-index 8d0bc9e..3a987ef 100644
+index 9e9d345..0ca4e5d 100644
 --- a/Makefile.libretro
 +++ b/Makefile.libretro
-@@ -108,6 +108,34 @@ else ifeq ($(platform), wincross64)
- 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+@@ -162,6 +162,35 @@ else ifeq ($(platform), wincross64)
  	LDFLAGS += -static-libgcc -static-libstdc++ 
  	EXTRA_LDF := -lwinmm -Wl,--export-all-symbols
+ 
 +# ARM
 +else ifneq (,$(findstring armv,$(platform)))
 +	TARGET := $(TARGET_NAME)_libretro.so
@@ -34,6 +34,7 @@ index 8d0bc9e..3a987ef 100644
 +	ASFLAGS += -mfloat-abi=hard
 +endif
 +	CFLAGS += -DARM
- else
- 	TARGET :=  $(TARGET_NAME)_libretro.dll
- 	CC = gcc
++
+ # Windows MSVC 2017 all architectures
+ else ifneq (,$(findstring windows_msvc2017,$(platform)))
+ 
