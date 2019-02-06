@@ -223,6 +223,22 @@ pin356_stop()
     fi
 }
 
+retroflag_pi_start()
+{
+	python /recalbox/scripts/retroflag-pi.py -m "$mode" &
+    pid=$!
+    echo "$pid" > /tmp/retroflag-pi.pid
+    wait "$pid"
+}
+
+retroflag_pi_stop()
+{
+    if [[ -f /tmp/retroflag-pi.pid ]]; then
+        kill `cat /tmp/retroflag-pi.pid`
+    fi
+}
+
+
 pin56_start()
 {
     mode=$1
@@ -276,5 +292,9 @@ case "$CONFVALUE" in
     "PIN356ONOFFRESET")
         echo "will start pin356_$1"
         pin356_$1 noparam
+    ;;
+     "RETROFLAG_PI")
+        echo "will start retroflag-pi_$1"
+        retroflag_pi_$1 onoff
     ;;
 esac
