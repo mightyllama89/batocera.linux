@@ -225,7 +225,8 @@ pin356_stop()
 
 retroflag_pi_start()
 {
-	python /recalbox/scripts/retroflag-pi.py -m "$mode" &
+    mode=$1
+    python /recalbox/scripts/retroflag-pi.py -m "$mode" &
     pid=$!
     echo "$pid" > /tmp/retroflag-pi.pid
     wait "$pid"
