@@ -1,4 +1,5 @@
-#This code sourced from https://gitlab.com/recalbox/recalbox. All credit goes to there. 
+#This code sourced from https://gitlab.com/recalbox/recalbox/blob/master/board/recalbox/fsoverlay/recalbox/scripts/rpi-pin356-power.py.
+#All credit goes to there. 
 
 import RPi.GPIO as GPIO
 import time
