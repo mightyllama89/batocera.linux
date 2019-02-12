@@ -360,48 +360,53 @@ if [[ "$command" == "storage" ]]; then
     fi
 fi
 
+
 if [[ "$command" == "hcitoolscan" ]]; then
-	#killall hidd >> /dev/null
-	killall hcitool > /dev/null 2>&1
-	hcitool scan | tail -n +2
-	exit 0
+    scanningDaemon=test-discovery
+    alternate="`$systemsetting  -command load -key controllers.bluetooth.alternate`"
+    [[ $alternate == 1 ]] && scanningDaemon=btDaemon
+    /recalbox/scripts/bluetooth/"$scanningDaemon" & ( PID=$! ; sleep 15 ; kill -15 $PID)
+    PYTHONIOENCODING=UTF-8 /recalbox/scripts/bluetooth/test-device list
+    exit 0
 fi
 
+
+
 if [[ "$command" == "hiddpair" ]]; then
-	name="$extra1"
-	mac1="$mode"
-	mac=`echo $mac1 | grep -oEi "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})" | tr '[:lower:]' '[:upper:]'`
-	macLowerCase=`echo $mac | tr '[:upper:]' '[:lower:]'`
-	if [ "$?" != "0" ]; then 
-		exit 1
-	fi
-	echo "pairing $name $mac" >>  $log
-	echo $name | grep "8Bitdo\|other" >> $log
-        if [ "$?" == "0" ]; then
-                echo "8Bitdo detected" >> $log
-                cat "/run/udev/rules.d/99-8bitdo.rules" | grep "$mac" >> /dev/null
-                if [ "$?" != "0" ]; then
-                        echo "adding rule for $mac" >> $log
-                        echo "SUBSYSTEM==\"input\", ATTRS{uniq}==\"$macLowerCase\", MODE=\"0666\", ENV{ID_INPUT_JOYSTICK}=\"1\"" >> "/run/udev/rules.d/99-8bitdo.rules"
-                fi
+    name="$postMode"
+    mac1="$mode"
+    mac=`echo $mac1 | grep -oEi "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})" | tr '[:lower:]' '[:upper:]'`
+    macLowerCase=`echo $mac | tr '[:upper:]' '[:lower:]'`
+    if [ "$?" != "0" ]; then
+        exit 1
+    fi
+    recallog "pairing $name $mac"
+    echo $name | grep "8Bitdo\|other"
+    if [ "$?" == "0" ]; then
+        recallog "8Bitdo detected"
+        cat "/run/udev/rules.d/99-8bitdo.rules" | grep "$mac" >> /dev/null
+        if [ "$?" != "0" ]; then
+            recallog "adding rule for $mac"
+            echo "SUBSYSTEM==\"input\", ATTRS{uniq}==\"$macLowerCase\", MODE=\"0666\", ENV{ID_INPUT_JOYSTICK}=\"1\"" >> "/run/udev/rules.d/99-8bitdo.rules"
         fi
-        /recalbox/scripts/bluetooth/test-device connect "$mac"
-        connected=$?
-	if [ $connected -eq 0 ]; then
-                hcitool con | grep $mac1
-                if [[ $? == "0" ]]; then
-                        echo "bluetooth : $mac1 connected !" >> $log
-                        /recalbox/scripts/bluetooth/test-device trusted "$mac" yes
-                        # Save the configuration
-                        btTar=/recalbox/share/system/bluetooth/bluetooth.tar
-                        rm "$btTar" ; tar cvf "$btTar" /var/lib/bluetooth/
-                else
-                        echo "bluetooth : $mac1 failed connection" >> $log
-                fi
+    fi
+    /recalbox/scripts/bluetooth/simple-agent -c NoInputNoOutput -i hci0 "$mac" 2>&1 | recallog
+    connected=${PIPESTATUS[0]}
+    if [ $connected -eq 0 ]; then
+        hcitool con | grep $mac1
+        if [[ $? == "0" ]]; then
+            recallog "bluetooth : $mac1 connected !"
+            /recalbox/scripts/bluetooth/test-device trusted "$mac" yes
+            # Save the configuration
+            btTar=/userdata/system/bluetooth/bluetooth.tar
+            rm "$btTar" ; tar cvf "$btTar" /var/lib/bluetooth/
         else
-                echo "bluetooth : $mac1 failed connection" >> $log
+            recallog "bluetooth : $mac1 failed connection"
         fi
-        exit $connected
+    else
+        recallog "bluetooth : $mac1 failed connection"
+    fi
+    exit $connected
 fi
 
 if [[ "$command" == "forgetBT" ]]; then
