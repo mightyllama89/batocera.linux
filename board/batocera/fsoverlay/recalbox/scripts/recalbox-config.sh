@@ -103,11 +103,11 @@ if [ -f "$configFile" ];then
 	fi
 
 	if [ "$mode" == "enable" ];then
-		echo "`logtime` : enabling overscan" >> $log
+		echo "enabling overscan" >> $log
 		sed -i "s/#\?disable_overscan=.*/disable_overscan=0/g" "$configFile"
 		sed -i "s/#\?overscan_scale=.*/overscan_scale=1/g" "$configFile"
 	elif [ "$mode" == "disable" ];then
-                echo "`logtime` : disabling overscan" >> $log
+                echo "disabling overscan" >> $log
                 sed -i "s/#\?disable_overscan=.*/disable_overscan=1/g" "$configFile"
                 sed -i "s/#\?overscan_scale=.*/overscan_scale=0/g" "$configFile"
 	else
@@ -160,7 +160,7 @@ if [ "$command" == "audio" ];then
 	elif [ "$mode" == "jack" ];then
 	    cmdVal="1"
 	fi
-        echo "`logtime` : setting audio output mode : $mode" >> $log
+        echo "setting audio output mode : $mode" >> $log
 	amixer cset numid=3 $cmdVal || exit 1
     elif [[ "${arch}" =~ "x86" ]]
     then
@@ -187,7 +187,7 @@ fi
 
 if [ "$command" == "volume" ];then
 	if [ "$mode" != "" ];then
-        	echo "`logtime` : setting audio volume : $mode" >> $log
+        	echo "setting audio volume : $mode" >> $log
 
 		# on my pc, the master is turned off at boot
 		# i don't know what are the rules to set here.
@@ -216,7 +216,7 @@ if [ "$command" == "module" ];then
 	rmmod /lib/modules/`uname -r`/extra/${modulename}.ko >> $log
 
         if [ "$mode" == "load" ];then
-	        echo "`logtime` : loading module $modulename args = $map" >> $log
+	        echo "loading module $modulename args = $map" >> $log
 		insmod /lib/modules/`uname -r`/extra/${modulename}.ko $map >> $log
 		[ "$?" ] || exit 1
         fi
@@ -265,7 +265,7 @@ if [[ "$command" == "wifi" ]]; then
         psk="$4"
 
         if [[ "$mode" == "enable" ]]; then
-            echo "`logtime` : configure wifi" >> $log
+            echo "configure wifi" >> $log
 	    mkdir -p "/var/lib/connman" || exit 1
 	    cat > "/var/lib/connman/recalbox_wifi.config" <<EOF
 [global]
@@ -358,6 +358,55 @@ if [[ "$command" == "storage" ]]; then
 	postBootConfig
 	exit 0
     fi
+fi
+
+
+if [[ "$command" == "hcitoolscan" ]]; then
+    scanningDaemon=test-discovery
+    alternate="`$systemsetting  -command load -key controllers.bluetooth.alternate`"
+    [[ $alternate == 1 ]] && scanningDaemon=btDaemon
+    /recalbox/scripts/bluetooth/"$scanningDaemon" & ( PID=$! ; sleep 15 ; kill -15 $PID)
+    PYTHONIOENCODING=UTF-8 /recalbox/scripts/bluetooth/test-device list
+    exit 0
+fi
+
+
+
+if [[ "$command" == "hiddpair" ]]; then
+    name="$postMode"
+    mac1="$mode"
+    mac=`echo $mac1 | grep -oEi "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})" | tr '[:lower:]' '[:upper:]'`
+    macLowerCase=`echo $mac | tr '[:upper:]' '[:lower:]'`
+    if [ "$?" != "0" ]; then
+        exit 1
+    fi
+    recallog "pairing $name $mac"
+    echo $name | grep "8Bitdo\|other"
+    if [ "$?" == "0" ]; then
+        recallog "8Bitdo detected"
+        cat "/run/udev/rules.d/99-8bitdo.rules" | grep "$mac" >> /dev/null
+        if [ "$?" != "0" ]; then
+            recallog "adding rule for $mac"
+            echo "SUBSYSTEM==\"input\", ATTRS{uniq}==\"$macLowerCase\", MODE=\"0666\", ENV{ID_INPUT_JOYSTICK}=\"1\"" >> "/run/udev/rules.d/99-8bitdo.rules"
+        fi
+    fi
+    /recalbox/scripts/bluetooth/simple-agent -c NoInputNoOutput -i hci0 "$mac" 2>&1 | recallog
+    connected=${PIPESTATUS[0]}
+    if [ $connected -eq 0 ]; then
+        hcitool con | grep $mac1
+        if [[ $? == "0" ]]; then
+            recallog "bluetooth : $mac1 connected !"
+            /recalbox/scripts/bluetooth/test-device trusted "$mac" yes
+            # Save the configuration
+            btTar=/userdata/system/bluetooth/bluetooth.tar
+            rm "$btTar" ; tar cvf "$btTar" /var/lib/bluetooth/
+        else
+            recallog "bluetooth : $mac1 failed connection"
+        fi
+    else
+        recallog "bluetooth : $mac1 failed connection"
+    fi
+    exit $connected
 fi
 
 if [[ "$command" == "forgetBT" ]]; then
