@@ -10,6 +10,7 @@ command="$1"
 mode="$2"
 extra1="$3"
 extra2="$4"
+postMode="${@:3}"
 arch=`cat /recalbox/recalbox.arch`
 
 recalboxupdateurl="https://batocera-linux.xorhub.com/upgrades"
@@ -398,7 +399,7 @@ if [[ "$command" == "hiddpair" ]]; then
             recallog "bluetooth : $mac1 connected !"
             /recalbox/scripts/bluetooth/test-device trusted "$mac" yes
             # Save the configuration
-            btTar=/userdata/system/bluetooth/bluetooth.tar
+            btTar=/recalbox/share/system/bluetooth/bluetooth.tar
             rm "$btTar" ; tar cvf "$btTar" /var/lib/bluetooth/
         else
             recallog "bluetooth : $mac1 failed connection"

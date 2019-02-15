@@ -3,6 +3,8 @@
 # Auto connect bluetooth controllers
 #
 
+systemsetting="python /usr/lib/python2.7/site-packages/configgen/settings/recalboxSettings.pyc"
+btTar=/recalbox/share/system/bluetooth/bluetooth.tar
 scanningDaemon=test-discovery
 alternate="`$systemsetting  -command load -key controllers.bluetooth.alternate`"
 scanCmd=
