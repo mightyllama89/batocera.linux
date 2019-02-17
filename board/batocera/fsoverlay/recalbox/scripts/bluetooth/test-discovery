@@ -11,26 +11,8 @@ except ImportError:
   import gobject as GObject
 import bluezutils
 
-compact = False
+compact = True
 devices = {}
-
-def connect_device(address, properties):
-	# Get the adapter name and bt mac
-	for key, value in properties.iteritems():
-		if type(value) is dbus.String:
-			value = unicode(value).encode('ascii', 'replace')
-		if (key == "Trusted"):
-			trusted = value
-		elif (key == "Connected"):
-			connected = value
-	# Get the device
-	device = bluezutils.find_device(address)
-	# Connect if Trusted
-	if trusted and not connected:
-		print("Connecting {} ...".format(address))
-		device.Connect()
-	else:
-		print("{} is either not trusted, either already connected".format(address))
 
 def print_compact(address, properties):
 	name = ""
@@ -97,13 +79,10 @@ def interfaces_added(path, interfaces):
 	else:
 		address = "<unknown>"
 
-	print("Interface added {}".format(address))
-
 	if compact:
 		print_compact(address, devices[path])
 	else:
 		print_normal(address, devices[path])
-	connect_device(address, devices[path])
 
 def properties_changed(interface, changed, invalidated, path):
 	if interface != "org.bluez.Device1":
@@ -123,13 +102,10 @@ def properties_changed(interface, changed, invalidated, path):
 	else:
 		address = "<unknown>"
 
-	print("Properties changed {}".format(address))
-
 	if compact:
 		print_compact(address, devices[path])
 	else:
 		print_normal(address, devices[path])
-	connect_device(address, devices[path])
 
 if __name__ == '__main__':
 	dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -139,6 +115,18 @@ if __name__ == '__main__':
 	option_list = [
 			make_option("-i", "--device", action="store",
 					type="string", dest="dev_id"),
+			make_option("-u", "--uuids", action="store",
+					type="string", dest="uuids",
+					help="Filtered service UUIDs [uuid1,uuid2,...]"),
+			make_option("-r", "--rssi", action="store",
+					type="int", dest="rssi",
+					help="RSSI threshold value"),
+			make_option("-p", "--pathloss", action="store",
+					type="int", dest="pathloss",
+					help="Pathloss threshold value"),
+			make_option("-t", "--transport", action="store",
+					type="string", dest="transport",
+					help="Type of scan to run (le/bredr/auto)"),
 			make_option("-c", "--compact",
 					action="store_true", dest="compact"),
 			]
@@ -167,7 +155,29 @@ if __name__ == '__main__':
 	for path, interfaces in objects.iteritems():
 		if "org.bluez.Device1" in interfaces:
 			devices[path] = interfaces["org.bluez.Device1"]
-			
+
+	scan_filter = dict()
+
+	if options.uuids:
+		uuids = []
+		uuid_list = options.uuids.split(',')
+		for uuid in uuid_list:
+			uuids.append(uuid)
+
+		scan_filter.update({ "UUIDs": uuids })
+
+	if options.rssi:
+		scan_filter.update({ "RSSI": dbus.Int16(options.rssi) })
+
+	if options.pathloss:
+		scan_filter.update({ "Pathloss": dbus.UInt16(options.pathloss) })
+
+	if options.transport:
+		scan_filter.update({ "Transport": options.transport })
+
+	if scan_filter:
+		adapter.SetDiscoveryFilter(scan_filter)
+
 	adapter.StartDiscovery()
 
 	mainloop = GObject.MainLoop()
