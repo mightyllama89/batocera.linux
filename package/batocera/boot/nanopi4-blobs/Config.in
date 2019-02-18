@@ -1,0 +1,2 @@
+config BR2_PACKAGE_NANOPI4_BLOBS
+    bool "nanopi4-blobs"
