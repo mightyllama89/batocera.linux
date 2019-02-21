@@ -15,7 +15,6 @@ define MUPEN64PLUS_GLES2_BUILD_CMDS
         CFLAGS="$(TARGET_CFLAGS)" CXXFLAGS="$(TARGET_CXXFLAGS)" \
         $(MAKE)  CXX="$(TARGET_CXX)" CC="$(TARGET_CC)" LD="$(TARGET_LD)" RANLIB="$(TARGET_RANLIB)" AR="$(TARGET_AR)" CROSS_COMPILE="$(STAGING_DIR)/usr/bin/" \
 	PREFIX="$(STAGING_DIR)/usr" \
-	SHAREDIR="/recalbox/share_init/system/configs/mupen64" \
 	PKG_CONFIG="$(HOST_DIR)/usr/bin/pkg-config" \
 	HOST_CPU="$(MUPEN64PLUS_HOST_CPU)" \
         APIDIR="$(STAGING_DIR)/usr/include/mupen64plus" \
@@ -28,7 +27,6 @@ define MUPEN64PLUS_GLES2_INSTALL_TARGET_CMDS
         CFLAGS="$(TARGET_CFLAGS)" CXXFLAGS="$(TARGET_CXXFLAGS)" \
         $(MAKE)  CXX="$(TARGET_CXX)" CC="$(TARGET_CC)" LD="$(TARGET_LD)" RANLIB="$(TARGET_RANLIB)" AR="$(TARGET_AR)" CROSS_COMPILE="$(STAGING_DIR)/usr/bin/" \
 	PREFIX="$(TARGET_DIR)/usr/" \
-	SHAREDIR="/recalbox/share_init/system/configs/mupen64" \
 	PKG_CONFIG="$(HOST_DIR)/usr/bin/pkg-config" \
 	HOST_CPU="$(MUPEN64PLUS_HOST_CPU)" \
         APIDIR="$(STAGING_DIR)/usr/include/mupen64plus" \
