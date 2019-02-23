@@ -135,6 +135,7 @@ menu "Debugging, profiling and benchmark"
 	source "package/uclibc-ng-test/Config.in"
 	source "package/valgrind/Config.in"
 	source "package/whetstone/Config.in"
+	source "package/freeimage/Config.in"
 endmenu
 
 menu "Development tools"
